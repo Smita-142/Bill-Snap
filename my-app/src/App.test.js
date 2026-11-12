@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-jest.mock('./lib/supabase', () => ({ supabase: null }));
 import App from './App';
+jest.mock('./lib/supabase', () => ({ supabase: null }));
 
 beforeEach(() => {
   window.history.replaceState({}, '', '/');

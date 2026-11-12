@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDown, ArrowRight, Check, ChevronRight, Menu, ScanLine, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight, Menu, ScanLine, ShieldCheck, Sparkles, X } from 'lucide-react';
 import './LandingPage.css';
 
 function ChromeLines() {

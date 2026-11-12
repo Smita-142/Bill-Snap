@@ -1,4 +1,4 @@
-﻿import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -36,12 +36,14 @@ export function getInitials(name, email) {
 
 const money = (value, currency = 'INR') => new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: 2 }).format(Number(value) || 0);
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const CATEGORY_COLORS = ['#A78BFA', '#67E8F9', '#FBBF24', '#34D399', '#FB7185', '#64748B', '#F97316', '#06B6D4'];
 function getStoredAccessToken() {
   const stores = [window.localStorage, window.sessionStorage];
   for (const store of stores) {
     for (let index = 0; index < store.length; index += 1) {
       const key = store.key(index);
-      if (!key || !(key.startsWith('sb-') && key.endsWith('-auth-token')) && !['supabase.auth.token', 'billsnap-auth-session'].includes(key)) continue;
+      const isAuthKey = Boolean(key && ((key.startsWith('sb-') && key.endsWith('-auth-token')) || ['supabase.auth.token', 'billsnap-auth-session'].includes(key)));
+      if (!isAuthKey) continue;
       try {
         const session = JSON.parse(store.getItem(key));
         const token = session?.access_token || session?.currentSession?.access_token;
@@ -305,7 +307,7 @@ function SectionHeading({ title, subtitle, action }) {
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { bills, name, setToast } = useApp();
+  const { bills, name } = useApp();
   const [range, setRange] = useState('Last 6 months');
 
   const now = new Date();
@@ -346,10 +348,9 @@ function Dashboard() {
       months.push({ month: label, amount: amt });
     }
     return months;
-  }, [bills, range, thisMonth, thisYear, MONTHS_BACK]);
+  }, [bills, thisMonth, thisYear, MONTHS_BACK]);
 
   // Category donut from real bills
-  const CATEGORY_COLORS = ['#A78BFA','#67E8F9','#FBBF24','#34D399','#FB7185','#64748B','#F97316','#06B6D4'];
   const categoryChartData = useMemo(() =>
     Object.entries(categoryCounts)
       .sort((a, b) => b[1] - a[1])
@@ -407,7 +408,7 @@ function ScanBill() {
   const navigate = useNavigate();
   useEffect(() => {
     setPendingBill(null);
-  }, []);
+  }, [setPendingBill]);
   useEffect(() => {
     if (!file && !scanning) return undefined;
     const handleBeforeUnload = event => {
@@ -673,7 +674,7 @@ function BillDetails() {
     const url = URL.createObjectURL(pendingBill.file);
     setPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
-  }, [pendingBill, navigate]);
+  }, [pendingBill, result, navigate]);
   useEffect(() => {
     if (!pendingBill) return undefined;
     const controller = new AbortController();
@@ -901,7 +902,6 @@ function SpendingInsights() {
   }, [billsThisMonth]);
 
   // Category chart data for bottom panel
-  const CATEGORY_COLORS = ['#A78BFA','#67E8F9','#FBBF24','#34D399','#FB7185','#64748B','#F97316','#06B6D4'];
   const categoryChartData = useMemo(() =>
     categoryTotals.slice(0, 8).map(([name, amount], i) => ({
       name, amount, color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
